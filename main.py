@@ -1,24 +1,12 @@
-import requests
-import threading
-
-def ping_server():
-    try:
-        requests.get('https://dushevny-shchit-new.onrender.com/')
-        print("✅ Пинг отправлен")
-    except:
-        pass
-    # Пинг каждые 10 минут
-    threading.Timer(600, ping_server).start()
-
-# Запустить при старте
-ping_server()
 # -*- coding: utf-8 -*-
 import telebot
 import os
 import logging
 import time
 import sys
-from flask import Flask, request  # 
+import requests
+import threading
+from flask import Flask, request
 from threading import Thread
 
 # Настройка логирования
@@ -35,13 +23,20 @@ if not TOKEN:
     sys.exit(1)
 
 bot = telebot.TeleBot(TOKEN)
-
 ORTHODOX_BLESSING = "☦️ Во имя Отца, и Сына, и Святаго Духа! "
+app = Flask(__name__)
 
 print("🛡️ Бот 'Душевный Щит' запускается...")
 
-# Веб-сервер для мониторинга
-app = Flask(__name__)
+# Функция пинга для 24/7 работы
+def ping_server():
+    try:
+        requests.get('https://dushevny-shchit-new.onrender.com/')
+        logger.info("✅ Пинг отправлен")
+    except Exception as e:
+        logger.error(f"❌ Ошибка пинга: {e}")
+    # Пинг каждые 10 минут
+    threading.Timer(600, ping_server).start()
 
 @app.route('/')
 def home():
@@ -55,22 +50,45 @@ def health():
 def ping():
     return "pong", 200
 
-def run_flask():
+def setup_webhook():
+    """Настраивает вебхук для бота"""
     try:
-        port = int(os.environ.get('PORT', 10000))
-        logger.info(f"🚀 Запуск веб-сервера на порту {port}")
-        app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
+        bot.remove_webhook()
+        time.sleep(1)
+        webhook_url = f"https://dushevny-shchit-new.onrender.com/{TOKEN}"
+        bot.set_webhook(url=webhook_url)
+        logger.info(f"✅ Вебхук установлен: {webhook_url}")
     except Exception as e:
-        logger.error(f"❌ Ошибка веб-сервера: {e}")
+        logger.error(f"❌ Ошибка настройки вебхука: {e}")
 
-def keep_alive():
-    try:
-        t = Thread(target=run_flask)
-        t.daemon = True
-        t.start()
-        logger.info("✅ Веб-сервер запущен в фоновом режиме")
-    except Exception as e:
-        logger.error(f"❌ Ошибка запуска веб-сервера: {e}")
+# Маршрут для вебхука
+@app.route(f'/{TOKEN}', methods=['POST'])
+def webhook():
+    """Обработчик вебхука от Telegram"""
+    if request.headers.get('content-type') == 'application/json':
+        json_string = request.get_data().decode('utf-8')
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        return ''
+    return ''
+
+# ДАЛЕЕ ВСТАВЬТЕ ВЕСЬ ВАШ ОСНОВНОЙ КОД 
+# все обработчики @bot.message_handler, функции и т.д.
+# ... (ваши обработчики сообщений) ...
+
+if __name__ == "__main__":
+    print("✅ Бот 'Душевный Щит' готов к работе!")
+    
+    # Запускаем пинг для 24/7
+    ping_server()
+    
+    # Настраиваем вебхук
+    setup_webhook()
+    
+    # Запускаем сервер
+    port = int(os.environ.get('PORT', 10000))
+    logger.info(f"🚀 Запуск сервера на порту {port}")
+    app.run(host='0.0.0.0', port=port, debug=False)
 
 # ОСНОВНЫЕ КОМАНДЫ БОТА
 @bot.message_handler(commands=['start'])
@@ -2204,6 +2222,7 @@ if __name__ == "__main__":
     port = int(os.environ.get('PORT', 10000))
     logger.info(f"🚀 Запуск сервера на порту {port}")
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
