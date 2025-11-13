@@ -3,13 +3,11 @@ import os
 import time
 import logging
 from flask import Flask
-import threading
+from threading import Thread
 
-# Настройка логирования
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Получаем токен
 TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 if not TOKEN:
     logger.error("❌ Токен не найден!")
@@ -17,7 +15,7 @@ if not TOKEN:
 
 bot = telebot.TeleBot(TOKEN)
 
-# Веб-сервер для Render
+# Веб-сервер
 app = Flask(__name__)
 
 @app.route('/')
@@ -28,27 +26,31 @@ def home():
 def health():
     return "OK", 200
 
-def run_web_server():
-    app.run(host='0.0.0.0', port=10000)
-
-# Телеграм бот
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.chat.id, "☦️ Бот работает!")
+    bot.send_message(message.chat.id, "✅ Бот работает!")
 
 if __name__ == "__main__":
-    # Запускаем веб-сервер
-    web_thread = threading.Thread(target=run_web_server)
-    web_thread.daemon = True
-    web_thread.start()
+    # Останавливаем старые соединения
+    try:
+        bot.remove_webhook()
+        time.sleep(2)
+    except:
+        pass
     
-    print("✅ Бот и веб-сервер запущены")
+    # Запускаем Flask
+    def run_flask():
+        app.run(host='0.0.0.0', port=10000)
+    
+    flask_thread = Thread(target=run_flask, daemon=True)
+    flask_thread.start()
+    
+    print("🚀 Запуск бота...")
     
     # Запускаем бота
     while True:
         try:
-            bot.infinity_polling()
+            bot.infinity_polling(timeout=30, long_polling_timeout=30)
         except Exception as e:
-            logger.error(f"Ошибка: {e}")
-            time.sleep(10)
-
+            logger.error(f"❌ Ошибка: {e}")
+            time.sleep(30)
