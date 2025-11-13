@@ -1,3 +1,17 @@
+import requests
+import threading
+
+def ping_server():
+    try:
+        requests.get('https://dushevny-shchit-new.onrender.com/')
+        print("✅ Пинг отправлен")
+    except:
+        pass
+    # Пинг каждые 10 минут
+    threading.Timer(600, ping_server).start()
+
+# Запустить при старте
+ping_server()
 # -*- coding: utf-8 -*-
 import telebot
 import os
@@ -2190,5 +2204,7 @@ if __name__ == "__main__":
     port = int(os.environ.get('PORT', 10000))
     logger.info(f"🚀 Запуск сервера на порту {port}")
     app.run(host='0.0.0.0', port=port, debug=False)
+
+
 
 
