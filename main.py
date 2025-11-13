@@ -3,11 +3,9 @@ import telebot
 import os
 import logging
 import time
-import sys
 import requests
 import threading
 from flask import Flask, request
-from threading import Thread
 
 # Настройка логирования
 logging.basicConfig(
@@ -49,46 +47,6 @@ def health():
 @app.route('/ping')
 def ping():
     return "pong", 200
-
-def setup_webhook():
-    """Настраивает вебхук для бота"""
-    try:
-        bot.remove_webhook()
-        time.sleep(1)
-        webhook_url = f"https://dushevny-shchit-new.onrender.com/{TOKEN}"
-        bot.set_webhook(url=webhook_url)
-        logger.info(f"✅ Вебхук установлен: {webhook_url}")
-    except Exception as e:
-        logger.error(f"❌ Ошибка настройки вебхука: {e}")
-
-# Маршрут для вебхука
-@app.route(f'/{TOKEN}', methods=['POST'])
-def webhook():
-    """Обработчик вебхука от Telegram"""
-    if request.headers.get('content-type') == 'application/json':
-        json_string = request.get_data().decode('utf-8')
-        update = telebot.types.Update.de_json(json_string)
-        bot.process_new_updates([update])
-        return ''
-    return ''
-
-# ДАЛЕЕ ВСТАВЬТЕ ВЕСЬ ВАШ ОСНОВНОЙ КОД 
-# все обработчики @bot.message_handler, функции и т.д.
-# ... (ваши обработчики сообщений) ...
-
-if __name__ == "__main__":
-    print("✅ Бот 'Душевный Щит' готов к работе!")
-    
-    # Запускаем пинг для 24/7
-    ping_server()
-    
-    # Настраиваем вебхук
-    setup_webhook()
-    
-    # Запускаем сервер
-    port = int(os.environ.get('PORT', 10000))
-    logger.info(f"🚀 Запуск сервера на порту {port}")
-    app.run(host='0.0.0.0', port=port, debug=False)
 
 # ОСНОВНЫЕ КОМАНДЫ БОТА
 @bot.message_handler(commands=['start'])
@@ -2222,6 +2180,7 @@ if __name__ == "__main__":
     port = int(os.environ.get('PORT', 10000))
     logger.info(f"🚀 Запуск сервера на порту {port}")
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
