@@ -316,10 +316,10 @@ def chat(message):
     btn1 = telebot.types.KeyboardButton('😰 Тревога и паника')
     btn2 = telebot.types.KeyboardButton('😠 Гнев и раздражительность')
     btn3 = telebot.types.KeyboardButton('😔 Чувство вины')
-    btn4 = telebot.types.KeyboardButton('😴 Проблемы со сном')
+    btn4 = telebot.types.KeyboardButton('😴 Проблемы со сном')  # ← ЭТУ КНОПКУ ДОБАВИТЬ
     btn5 = telebot.types.KeyboardButton('😞 Тоска и одиночество')
     btn6 = telebot.types.KeyboardButton('🏠 Назад')
-    markup.add(btn1, btn2, btn3, btn4, btn5, btn6)
+    markup.add(btn1, btn2, btn3, btn4, btn5, btn6)  # ← УБЕДИТЕСЬ ЧТО btn4 ЕСТЬ ЗДЕСЬ
     
     text = f"""{ORTHODOX_BLESSING}
 
@@ -2165,3 +2165,4 @@ if __name__ == "__main__":
     
     # Запускаем Telegram бота с защитой от дублирования
     run_bot_safely()
+
