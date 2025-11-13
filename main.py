@@ -2076,6 +2076,7 @@ def church_behavior(message):
     bot.send_message(message.chat.id, text, parse_mode='Markdown')
 
 # НАВИГАЦИЯ
+# НАВИГАЦИЯ
 @bot.message_handler(func=lambda message: message.text in ['📚 Назад в библиотеку', '💒 Назад в библиотеку'])
 def back_to_library(message):
     library_command(message)
@@ -2083,65 +2084,6 @@ def back_to_library(message):
 @bot.message_handler(func=lambda message: message.text == '🏠 Назад')
 def back_to_main(message):
     start(message)
-
-# ОБРАБОТКА НЕИЗВЕСТНЫХ СООБЩЕНИЙ
-@bot.message_handler(func=lambda message: True)
-def unknown_message(message):
-    text = f"""{ORTHODOX_BLESSING}
-
-*Дорогой друг!*
-
-Я не понял твоего сообщения. Пожалуйста, используй кнопки меню для навигации.
-
-Если тебе нужна срочная помощь - нажми *🚨 Помощь*
-
-*Да благословит тебя Господь!*"""
-    
-    bot.send_message(message.chat.id, text, parse_mode='Markdown')
-
-# ФУНКЦИЯ ЗАПУСКА БОТА С ЗАЩИТОЙ ОТ ДУБЛИРОВАНИЯ
-def run_bot_safely():
-    max_retries = 5
-    retry_delay = 10
-    
-    for attempt in range(max_retries):
-        try:
-            logger.info(f"🔄 Попытка запуска бота {attempt + 1}/{max_retries}")
-            
-            # Останавливаем предыдущие обновления
-            try:
-                bot.remove_webhook()
-                time.sleep(1)
-            except:
-                pass
-            
-            # Запускаем бота
-            bot.infinity_polling(timeout=60, long_polling_timeout=60)
-            
-        except telebot.apihelper.ApiTelegramException as e:
-            if "terminated by other getUpdates request" in str(e):
-                logger.error(f"❌ Обнаружен другой запущенный экземпляр бота. Попытка {attempt + 1}/{max_retries}")
-                if attempt < max_retries - 1:
-                    logger.info(f"⏳ Ожидание {retry_delay} секунд перед повторной попыткой...")
-                    time.sleep(retry_delay)
-                    # Увеличиваем задержку для следующей попытки
-                    retry_delay *= 2
-                else:
-                    logger.error("❌ Не удалось запустить бота после нескольких попыток")
-                    raise
-            else:
-                logger.error(f"❌ Ошибка Telegram API: {e}")
-                raise
-                
-        except Exception as e:
-            logger.error(f"❌ Неожиданная ошибка: {e}")
-            if attempt < max_retries - 1:
-                logger.info(f"⏳ Перезапуск через {retry_delay} секунд...")
-                time.sleep(retry_delay)
-                retry_delay *= 2
-            else:
-                logger.error("❌ Не удалось запустить бота после нескольких попыток")
-                raise
 
 # Поиск по ключевым словам - УПРОЩЕННАЯ ВЕРСИЯ
 @bot.message_handler(func=lambda message: True)
@@ -2209,14 +2151,6 @@ def search_handler(message):
 
 def setup_webhook():
     """Настраивает вебхук для бота"""
-
-# Маршрут для вебхука
-@app.route(f'/{TOKEN}', methods=['POST'])
-def webhook():
-
-if __name__ == "__main__":
-def setup_webhook():
-    """Настраивает вебхук для бота"""
     try:
         # Удаляем старый вебхук
         bot.remove_webhook()
@@ -2243,18 +2177,17 @@ def webhook():
 
 if __name__ == "__main__":
     print("✅ Бот 'Душевный Щит' готов к работе!")
-    print("⚡ Психопрактики для сложных условий")
+    
+    # Запускаем пинг для 24/7
+    ping_server()
     
     # Настраиваем вебхук
     setup_webhook()
     
-    # Запускаем Flask сервер
+    # Запускаем сервер
     port = int(os.environ.get('PORT', 10000))
     logger.info(f"🚀 Запуск сервера на порту {port}")
     app.run(host='0.0.0.0', port=port, debug=False)
-
-
-
 
 
 
