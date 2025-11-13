@@ -2153,38 +2153,41 @@ def run_bot_safely():
                 logger.error("❌ Не удалось запустить бота после нескольких попыток")
                 raise
 
-def run_bot_safely():
-    """Упрощенный запуск бота без конфликтов"""
+def setup_webhook():
+    """Настраивает вебхук для бота"""
     try:
-        # Удаляем веб-хук и даем время на остановку других инстансов
+        # Удаляем старый вебхук
         bot.remove_webhook()
-        time.sleep(5)
+        time.sleep(1)
         
-        logger.info("🚀 Запускаем бота...")
-        # Запускаем с очисткой предыдущих обновлений
-        bot.infinity_polling(
-            timeout=90, 
-            long_polling_timeout=90,
-            allowed_updates=[]  # Очищаем очередь обновлений
-        )
+        # Устанавливаем новый вебхук
+        webhook_url = f"https://dushevny-shchit-new.onrender.com/{TOKEN}"
+        bot.set_webhook(url=webhook_url)
+        logger.info(f"✅ Вебхук установлен: {webhook_url}")
         
     except Exception as e:
-        logger.error(f"❌ Ошибка запуска: {e}")
-        logger.info("🔄 Перезапуск через 10 секунд...")
-        time.sleep(10)
-        run_bot_safely()  # Рекурсивный перезапуск
+        logger.error(f"❌ Ошибка настройки вебхука: {e}")
+
+# Маршрут для вебхука
+@app.route(f'/{TOKEN}', methods=['POST'])
+def webhook():
+    """Обработчик вебхука от Telegram"""
+    if request.headers.get('content-type') == 'application/json':
+        json_string = request.get_data().decode('utf-8')
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        return ''
+    return ''
 
 if __name__ == "__main__":
     print("✅ Бот 'Душевный Щит' готов к работе!")
     print("⚡ Психопрактики для сложных условий")
     
-    # Запускаем Flask в отдельном потоке
-    keep_alive()
+    # Настраиваем вебхук
+    setup_webhook()
     
-    # Даем время Flask запуститься
-    time.sleep(2)
-    
-    # Запускаем Telegram бота с защитой от дублирования
-    run_bot_safely()
-
+    # Запускаем Flask сервер
+    port = int(os.environ.get('PORT', 10000))
+    logger.info(f"🚀 Запуск сервера на порту {port}")
+    app.run(host='0.0.0.0', port=port, debug=False)
 
