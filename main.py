@@ -32,6 +32,39 @@ if __name__ == "__main__":
         except Exception as e:
             logger.error(f"Ошибка: {e}")
             time.sleep(10)
+# Веб-сервер для Render
+from flask import Flask
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "🛡️ Бот активен!"
+
+@app.route('/health')
+def health():
+    return "OK", 200
+
+def run_flask():
+    app.run(host='0.0.0.0', port=10000)
+
+if __name__ == "__main__":
+    print("✅ Бот запускается...")
+    
+    # Запускаем Flask в отдельном потоке
+    from threading import Thread
+    flask_thread = Thread(target=run_flask)
+    flask_thread.daemon = True
+    flask_thread.start()
+    
+    # Запускаем бота
+    while True:
+        try:
+            bot.remove_webhook()
+            time.sleep(1)
+            bot.infinity_polling(timeout=60)
+        except Exception as e:
+            logger.error(f"Ошибка: {e}")
+            time.sleep(10)
 
 
 
