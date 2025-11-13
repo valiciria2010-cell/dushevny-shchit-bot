@@ -4,7 +4,7 @@ import os
 import logging
 import time
 import sys
-from flask import Flask
+from flask import Flask, request  # 
 from threading import Thread
 
 # Настройка логирования
@@ -2190,4 +2190,5 @@ if __name__ == "__main__":
     port = int(os.environ.get('PORT', 10000))
     logger.info(f"🚀 Запуск сервера на порту {port}")
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
